@@ -10,6 +10,7 @@ const generateToken = (adminId) => {
       expiresIn: process.env.JWT_EXPIRES_IN,
     }
   );
-};
+};  
+// helo
 
 module.exports = generateToken;
