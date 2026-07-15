@@ -1,7 +1,9 @@
 const Admin = require("../models/Admin");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 const generateToken = require("../utils/generateToken");
+const generateRefreshToken = require("../utils/generateRefreshToken");
 
 // Register Admin
 const registerAdmin = async (req, res) => {
@@ -72,7 +74,7 @@ const loginAdmin = async (req, res) => {
     }
 
     const token = generateToken(admin._id);
-
+    const refreshToken = generateRefreshToken(admin._id)
     // Remove password from response
     const adminResponse = admin.toObject();
     delete adminResponse.password;
@@ -80,7 +82,8 @@ const loginAdmin = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Login successful",
-      token,
+      accessToken :token,
+      refreshToken,
       admin: adminResponse,
     });
   }
@@ -190,6 +193,54 @@ const resetPassword = async (req, res) => {
     });
   }
 };
+const refreshAccessToken = async (req, res) => {
+  try {
+    // Get Refresh Token
+    const { refreshToken } = req.body;
+
+    // Check Refresh Token
+    if (!refreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token is required",
+      });
+    }
+
+    // Verify Refresh Token
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET
+    );
+
+    // Check Admin
+    const admin = await Admin.findById(decoded.id);
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
+    // Generate New Access Token
+    const accessToken = generateToken(admin._id);
+
+    // Send Response
+    return res.status(200).json({
+      success: true,
+      message: "New access token generated successfully",
+      accessToken,
+    });
+
+  } catch (error) {
+  console.log(error);
+
+  return res.status(401).json({
+    success: false,
+    message: error.message,
+  });
+}
+};
 
 
 
@@ -199,4 +250,5 @@ module.exports = {
   logoutAdmin,
   forgotPassword,
   resetPassword,
+  refreshAccessToken,
 };

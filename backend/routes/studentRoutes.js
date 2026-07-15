@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const studentValidationRules = require("../validators/studentValidator");
+const validate = require("../middleware/validationMiddleware");
 const { protect, authorize } = require("../middleware/authMiddleware");
 
 const {
@@ -11,7 +13,8 @@ const {
 } = require("../controllers/studentController");
 
 // Create Student
-router.post("/", protect, createStudent);
+router.post("/", protect, studentValidationRules,
+  validate, createStudent);
 
 // Get All Students
 router.get("/", protect, getStudents);
