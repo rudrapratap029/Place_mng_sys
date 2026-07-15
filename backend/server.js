@@ -14,10 +14,11 @@ connectDB();
 
 app.use(express.json());
 
-app.use("/api/students", studentRoutes);
-app.use("/api/companies", companyRoutes);
-app.use("/api/application", applicationRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/companies", companyRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/application", applicationRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("Welcome to Placement Management System");
