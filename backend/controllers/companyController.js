@@ -1,7 +1,7 @@
 const Company = require("../models/Company");
   
 //     create company 
-const createCompany = async (req, res) => {
+const createCompany = async (req, res , next ) => {
     try {
         const company = await Company.create(req.body);
 
@@ -13,16 +13,13 @@ const createCompany = async (req, res) => {
 
     } catch (error) {
 
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        next(error);
 
     }
 };
 
       // get company 
-const getCompanies = async (req, res) => {
+const getCompanies = async (req, res , next) => {
     try {
         const companies = await Company.find();
 
@@ -34,16 +31,12 @@ const getCompanies = async (req, res) => {
 
     } catch (error) {
 
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
+       next(error);
     }
 };
 //    update comapny 
 
-const updateCompany = async (req, res) => {
+const updateCompany = async (req, res , next ) => {
     try {
 
         const company = await Company.findByIdAndUpdate(
@@ -55,54 +48,63 @@ const updateCompany = async (req, res) => {
             }
         );
 
+        if(!company){
+
+    const error = new Error("Company not found");
+    error.statusCode = 404;
+
+    throw error;
+}
+
         return res.status(200).json({
             success: true,
             message: "Company updated successfully",
             data: company
         });
+        
 
     } catch (error) {
 
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
+       next(error);
     }
 };        
 
 //   get comapny by id 
-const getCompanyById = async (req, res) => {
+const getCompanyById = async (req, res ,next) => {
     try {
 
         const company = await Company.findById(req.params.id);
+         if(!company){
+
+    const error = new Error("Company not found");
+    error.statusCode = 404;
+
+    throw error;
+}
+
 
         return res.status(200).json({
             success: true,
             message: "Company fetched successfully",
             data: company
         });
-
+       
     } catch (error) {
-
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
+        next(error); 
     }
 };
 
 //      delete 
 
-const deleteCompany = async(req,res)=>{
+const deleteCompany = async(req,res, next)=>{
   try{
     const company = await Company.findByIdAndDelete(req.params.id);
-    if (!company) {
-    return res.status(404).json({
-        success: false,
-        message: "Company not found"
-    });
+   if(!company){
+
+    const error = new Error("Company not found");
+    error.statusCode = 404;
+
+    throw error;
 }
 
     return res.status(200).json({
@@ -113,10 +115,7 @@ const deleteCompany = async(req,res)=>{
 
   }
   catch(error){
-    return res.status(500).json({
-      success : false,
-      message : error.message
-    })
+   next(error);
   }
 
 }

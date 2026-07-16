@@ -7,6 +7,7 @@ const studentRoutes = require("./routes/studentRoutes");
 const companyRoutes = require("./routes/companyRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
 const authRoutes = require("./routes/authRoutes");
+const errorHandler = require("./middleware/errorMiddleware");
 
 const app = express();
 
@@ -14,15 +15,22 @@ connectDB();
 
 app.use(express.json());
 
+
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/application", applicationRoutes);
 
 
+// Global Error Handler (always last)
+app.use(errorHandler);
+
+
 app.get("/", (req, res) => {
   res.send("Welcome to Placement Management System");
 });
+
 
 const PORT = process.env.PORT || 3000;
 

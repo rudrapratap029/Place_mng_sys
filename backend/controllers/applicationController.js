@@ -2,77 +2,99 @@ const Application = require("../models/Application");
 const Student = require("../models/Student");
 const Company = require("../models/Company");
 
-const createApplication = async (req, res) => {
+
+// Create Application
+const createApplication = async (req, res, next) => {
   try {
-    // Get data from request body
+
     const { student, company } = req.body;
 
-    // Check required fields
+
     if (!student || !company) {
-      return res.status(400).json({
-        success: false,
-        message: "Student ID and Company ID are required",
-      });
+
+      const error = new Error(
+        "Student ID and Company ID are required"
+      );
+
+      error.statusCode = 400;
+
+      throw error;
     }
 
-    // Check if student exists
+
     const studentExists = await Student.findById(student);
 
     if (!studentExists) {
-      return res.status(404).json({
-        success: false,
-        message: "Student not found",
-      });
+
+      const error = new Error("Student not found");
+
+      error.statusCode = 404;
+
+      throw error;
     }
 
-    // Check if company exists
+
     const companyExists = await Company.findById(company);
 
     if (!companyExists) {
-      return res.status(404).json({
-        success: false,
-        message: "Company not found",
-      });
+
+      const error = new Error("Company not found");
+
+      error.statusCode = 404;
+
+      throw error;
     }
 
-    // Check duplicate application
+
     const existingApplication = await Application.findOne({
       student,
       company,
     });
 
+
     if (existingApplication) {
-      return res.status(409).json({
-        success: false,
-        message: "Student has already applied to this company",
-      });
+
+      const error = new Error(
+        "Student has already applied to this company"
+      );
+
+      error.statusCode = 409;
+
+      throw error;
     }
 
-    // Create application
+
     const application = await Application.create({
       student,
       company,
     });
 
-    // Success response
-    res.status(201).json({
+
+    return res.status(201).json({
       success: true,
       message: "Application created successfully",
       data: application,
     });
+
+
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+
+    next(error);
+
   }
 };
 
-const getApplications = async (req, res) => {
+
+
+// Get All Applications
+const getApplications = async (req, res, next) => {
+
   try {
+
     const applications = await Application.find()
       .populate("student")
       .populate("company");
+
 
     return res.status(200).json({
       success: true,
@@ -80,137 +102,195 @@ const getApplications = async (req, res) => {
       count: applications.length,
       data: applications,
     });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+
+
+  } catch(error){
+
+    next(error);
+
   }
 };
-const getApplicationById = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    const application = await Application.findById(id)
+
+
+// Get Application By ID
+const getApplicationById = async (req, res, next) => {
+
+  try {
+
+    const application = await Application.findById(req.params.id)
       .populate("student")
       .populate("company");
 
-    if (!application) {
-      return res.status(404).json({
-        success: false,
-        message: "Application not found",
-      });
+
+    if(!application){
+
+      const error = new Error("Application not found");
+
+      error.statusCode = 404;
+
+      throw error;
+
     }
 
+
     return res.status(200).json({
-      success: true,
-      message: "Application fetched successfully",
-      data: application,
+      success:true,
+      message:"Application fetched successfully",
+      data:application
     });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+
+
+  } catch(error){
+
+    next(error);
+
   }
 };
-const getApplicationsByStudent = async (req, res) => {
-  try {
-    const { studentId } = req.params;
+
+
+
+// Get Applications By Student
+const getApplicationsByStudent = async(req,res,next)=>{
+
+  try{
 
     const applications = await Application.find({
-      student: studentId,
+      student:req.params.studentId
     })
-      .populate("student")
-      .populate("company");
+    .populate("student")
+    .populate("company");
+
 
     return res.status(200).json({
-      success: true,
-      message: "Student applications fetched successfully",
-      count: applications.length,
-      data: applications,
+      success:true,
+      message:"Student applications fetched successfully",
+      count:applications.length,
+      data:applications
     });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+
+
+  }catch(error){
+
+    next(error);
+
   }
-}
-const getApplicationsByCompany = async (req, res) => {
-  try {
-    const { companyId } = req.params;
+
+};
+
+
+
+// Get Applications By Company
+const getApplicationsByCompany = async(req,res,next)=>{
+
+  try{
 
     const applications = await Application.find({
-      company: companyId,
+      company:req.params.companyId
     })
-      .populate("student")
-      .populate("company");
+    .populate("student")
+    .populate("company");
+
 
     return res.status(200).json({
-      success: true,
-      message: "Company applications fetched successfully",
-      count: applications.length,
-      data: applications,
+      success:true,
+      message:"Company applications fetched successfully",
+      count:applications.length,
+      data:applications
     });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+
+
+  }catch(error){
+
+    next(error);
+
   }
+
 };
-const updateApplicationStatus = async(req,res)=>{
-  const {id} = req.params;
-  const {status} = req.body;
+
+
+
+// Update Application Status
+const updateApplicationStatus = async(req,res,next)=>{
+
   try{
-    const application = await Application.findByIdAndUpdate(id ,{status}, {new : true})
+
+    const application = await Application.findByIdAndUpdate(
+      req.params.id,
+      {
+        status:req.body.status
+      },
+      {
+        new:true
+      }
+    );
+
+
     if(!application){
-      return res.status(404).json({
-        success : false,
-        message : "Application not found"
-      })
+
+      const error = new Error("Application not found");
+
+      error.statusCode = 404;
+
+      throw error;
+
     }
+
+
     return res.status(200).json({
-    success: true,
-    message: "Application status updated successfully",
-    data: application
-});
-    
-  }
-  catch(error){
-    return res.status(500).json({
-      success : false,
-      message : error.message
-    })
+      success:true,
+      message:"Application status updated successfully",
+      data:application
+    });
+
+
+  }catch(error){
+
+    next(error);
+
   }
 
-}
-const deleteApplication = async(req,res)=>{
-  const {id} = req.params;
+};
+
+
+
+// Delete Application
+const deleteApplication = async(req,res,next)=>{
+
   try{
-    const application = await Application.findByIdAndDelete(id);
+
+    const application = await Application.findByIdAndDelete(
+      req.params.id
+    );
+
+
     if(!application){
-      return res.status(404).json({
-        success : false,
-        message : "Application not found"
-      })
+
+      const error = new Error("Application not found");
+
+      error.statusCode = 404;
+
+      throw error;
+
     }
+
+
     return res.status(200).json({
-      success : true,
-      message : "Application deleted successfully",
-      data : application
-    })
+      success:true,
+      message:"Application deleted successfully",
+      data:application
+    });
+
+
+  }catch(error){
+
+    next(error);
 
   }
-  catch(error){
-    return res.status(500).json({
-      success : false,
-      message : error.message
-    })
-  }
 
-}
+};
+
+
 
 module.exports = {
   createApplication,
@@ -220,5 +300,4 @@ module.exports = {
   getApplicationsByCompany,
   updateApplicationStatus,
   deleteApplication
-
 };

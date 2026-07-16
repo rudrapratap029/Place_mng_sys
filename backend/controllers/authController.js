@@ -2,22 +2,31 @@ const Admin = require("../models/Admin");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+
 const generateToken = require("../utils/generateToken");
 const generateRefreshToken = require("../utils/generateRefreshToken");
 
+
 // Register Admin
-const registerAdmin = async (req, res) => {
+const registerAdmin = async (req, res, next) => {
+
   try {
+
     const { name, email, password, role } = req.body;
+
 
     const existingAdmin = await Admin.findOne({ email });
 
+
     if (existingAdmin) {
-      return res.status(400).json({
-        success: false,
-        message: "Admin already exists",
-      });
+
+      const error = new Error("Admin already exists");
+      error.statusCode = 400;
+
+      throw error;
+
     }
+
 
     const admin = await Admin.create({
       name,
@@ -26,220 +35,341 @@ const registerAdmin = async (req, res) => {
       role,
     });
 
-    // Remove password from response
+
     const adminResponse = admin.toObject();
+
     delete adminResponse.password;
 
-    res.status(201).json({
+
+    return res.status(201).json({
       success: true,
       message: "Admin registered successfully",
       admin: adminResponse,
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+
+
+  } catch(error){
+
+    next(error);
+
   }
+
 };
+
+
+
 
 // Login Admin
-const loginAdmin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-            //  validation 
-    if (!email || !password) {
-    return res.status(400).json({
-        success: false,
-        message: "Email and password are required",
-    });
-}
+const loginAdmin = async(req,res,next)=>{
 
-    const admin = await Admin.findOne({ email });
+  try{
 
-    if (!admin) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
+    const {email,password}=req.body;
+
+
+    if(!email || !password){
+
+      const error = new Error(
+        "Email and password are required"
+      );
+
+      error.statusCode = 400;
+
+      throw error;
+
     }
 
-    const isMatch = await bcrypt.compare(password, admin.password);
 
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password",
-      });
+    const admin = await Admin.findOne({email});
+
+
+    if(!admin){
+
+      const error = new Error(
+        "Invalid email or password"
+      );
+
+      error.statusCode = 401;
+
+      throw error;
+
     }
+
+
+    const isMatch = await bcrypt.compare(
+      password,
+      admin.password
+    );
+
+
+    if(!isMatch){
+
+      const error = new Error(
+        "Invalid email or password"
+      );
+
+      error.statusCode = 401;
+
+      throw error;
+
+    }
+
 
     const token = generateToken(admin._id);
-    const refreshToken = generateRefreshToken(admin._id)
-    // Remove password from response
+
+    const refreshToken = generateRefreshToken(admin._id);
+
+
     const adminResponse = admin.toObject();
+
     delete adminResponse.password;
 
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      accessToken :token,
-      refreshToken,
-      admin: adminResponse,
-    });
-  }
-  
-  catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-const logoutAdmin = async (req, res) => {
-  try {
+
     return res.status(200).json({
-      success: true,
-      message: "Logged out successfully",
+
+      success:true,
+      message:"Login successful",
+      accessToken:token,
+      refreshToken,
+      admin:adminResponse
+
     });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Logout failed",
-    });
+
+
+  }catch(error){
+
+    next(error);
+
   }
+
 };
-const forgotPassword = async (req, res) => {
-  try {
-    // Get Email
-    const { email } = req.body;
 
-    // Check Admin
-    const admin = await Admin.findOne({ email });
 
-    if (!admin) {
-      return res.status(404).json({
-        success: false,
-        message: "Admin not found",
-      });
+
+
+// Logout Admin
+const logoutAdmin = async(req,res,next)=>{
+
+  try{
+
+    return res.status(200).json({
+
+      success:true,
+      message:"Logged out successfully"
+
+    });
+
+
+  }catch(error){
+
+    next(error);
+
+  }
+
+};
+
+
+
+
+// Forgot Password
+const forgotPassword = async(req,res,next)=>{
+
+  try{
+
+    const {email}=req.body;
+
+
+    const admin = await Admin.findOne({email});
+
+
+    if(!admin){
+
+      const error = new Error("Admin not found");
+
+      error.statusCode = 404;
+
+      throw error;
+
     }
 
-    // Generate Reset Token
+
     const resetToken = admin.getResetPasswordToken();
 
-    // Save Token & Expiry
-    await admin.save({ validateBeforeSave: false });
 
-    // Create Reset URL
-    const resetUrl = `http://localhost:3000/api/auth/resetpassword/${resetToken}`;
+    await admin.save({
+      validateBeforeSave:false
+    });
 
-    // Response (Email integration baad me karenge)
+
+    const resetUrl =
+    `http://localhost:3000/api/auth/resetpassword/${resetToken}`;
+
+
     return res.status(200).json({
-      success: true,
-      message: "Password reset link generated successfully",
-      resetUrl,
+
+      success:true,
+      message:"Password reset link generated successfully",
+      resetUrl
+
     });
 
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-      error: error.message,
-    });
+
+  }catch(error){
+
+    next(error);
+
   }
+
 };
 
 
-const resetPassword = async (req, res) => {
-  try {
-    // Hash Token
+
+
+// Reset Password
+const resetPassword = async(req,res,next)=>{
+
+  try{
+
+
     const resetPasswordToken = crypto
       .createHash("sha256")
       .update(req.params.token)
       .digest("hex");
 
-    // Find Admin by Token & Check Expiry
+
+
     const admin = await Admin.findOne({
+
       resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() },
+
+      resetPasswordExpire:{
+        $gt:Date.now()
+      }
+
     });
 
-    if (!admin) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired reset token",
-      });
+
+
+    if(!admin){
+
+      const error = new Error(
+        "Invalid or expired reset token"
+      );
+
+      error.statusCode = 400;
+
+      throw error;
+
     }
 
-    // Set New Password
+
+
     admin.password = req.body.password;
 
-    // Clear Reset Fields
+
     admin.resetPasswordToken = undefined;
+
     admin.resetPasswordExpire = undefined;
 
-    // Save Admin (Password will be hashed by pre-save hook)
+
+
     await admin.save();
 
+
+
     return res.status(200).json({
-      success: true,
-      message: "Password reset successfully",
+
+      success:true,
+      message:"Password reset successfully"
+
     });
 
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-      error: error.message,
-    });
+
+
+  }catch(error){
+
+    next(error);
+
   }
-};
-const refreshAccessToken = async (req, res) => {
-  try {
-    // Get Refresh Token
-    const { refreshToken } = req.body;
 
-    // Check Refresh Token
-    if (!refreshToken) {
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token is required",
-      });
+};
+
+
+
+
+// Refresh Access Token
+const refreshAccessToken = async(req,res,next)=>{
+
+
+  try{
+
+
+    const {refreshToken}=req.body;
+
+
+
+    if(!refreshToken){
+
+      const error = new Error(
+        "Refresh token is required"
+      );
+
+      error.statusCode = 401;
+
+      throw error;
+
     }
 
-    // Verify Refresh Token
+
+
     const decoded = jwt.verify(
+
       refreshToken,
+
       process.env.JWT_REFRESH_SECRET
+
     );
 
-    // Check Admin
+
+
     const admin = await Admin.findById(decoded.id);
 
-    if (!admin) {
-      return res.status(404).json({
-        success: false,
-        message: "Admin not found",
-      });
+
+
+    if(!admin){
+
+      const error = new Error("Admin not found");
+
+      error.statusCode = 404;
+
+      throw error;
+
     }
 
-    // Generate New Access Token
+
+
     const accessToken = generateToken(admin._id);
 
-    // Send Response
+
+
     return res.status(200).json({
-      success: true,
-      message: "New access token generated successfully",
-      accessToken,
+
+      success:true,
+
+      message:"New access token generated successfully",
+
+      accessToken
+
     });
 
-  } catch (error) {
-  console.log(error);
 
-  return res.status(401).json({
-    success: false,
-    message: error.message,
-  });
-}
+
+  }catch(error){
+
+    next(error);
+
+  }
+
 };
 
 
