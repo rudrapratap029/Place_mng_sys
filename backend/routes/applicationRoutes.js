@@ -2,6 +2,8 @@ const express = require("express");
 
 const router = express.Router();
 const { protect, authorize } = require("../middleware/authMiddleware");
+const applicationValidationRules = require("../validators/applicationValidator");
+const validate = require("../middleware/validationMiddleware");
 const {
   createApplication,
   getApplications,
@@ -13,7 +15,13 @@ const {
 } = require("../controllers/applicationController");
 
 // Create a new application
-router.post("/", protect ,createApplication);
+router.post(
+  "/",
+  protect,
+  applicationValidationRules,
+  validate,
+  createApplication
+);
 
 // Get all applications
 router.get("/", protect , getApplications);
