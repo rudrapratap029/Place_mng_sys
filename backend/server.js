@@ -8,7 +8,7 @@ const companyRoutes = require("./routes/companyRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
 const authRoutes = require("./routes/authRoutes");
 const errorHandler = require("./middleware/errorMiddleware");
-
+const dashboardRoutes = require("./routes/dashboardRoutes");
 const app = express();
 
 connectDB();
@@ -25,6 +25,7 @@ app.use("/api/application", applicationRoutes);
 
 // Global Error Handler (always last)
 app.use(errorHandler);
+app.use("/api/dashboard", dashboardRoutes);
 
 
 app.get("/", (req, res) => {

@@ -1,6 +1,6 @@
-const Application = require("../models/Application");
-const Student = require("../models/Student");
-const Company = require("../models/Company");
+const Application = require("../models/application");
+const Student = require("../models/student");
+const Company = require("../models/company");
 
 
 // Create Application

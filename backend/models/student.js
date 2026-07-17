@@ -1,6 +1,7 @@
 
 
 const mongoose = require("mongoose");
+console.trace("student.js loaded");
 
 const studentSchema = new mongoose.Schema({
   name: {
@@ -28,8 +29,13 @@ const studentSchema = new mongoose.Schema({
 {
   timestamps : true
 });
+
 const Student = mongoose.model("Student", studentSchema);
 
+// console.log("Before model:", mongoose.models);
+
 // const Student = mongoose.model("Student", studentSchema);
+
+// console.log("After model:", mongoose.models);
 
 module.exports = Student;
