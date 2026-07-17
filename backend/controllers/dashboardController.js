@@ -98,10 +98,100 @@ const getRecentApplications = async (req, res, next) => {
   }
 };
 
+//  Application Status Analhtics
+
+const getApplicationStatusAnalytics = async(req,res,next)=>{
+
+  try{
+    const applicationStatus = await Application.aggregate([{
+        $group: {
+          _id: "$status",
+          count: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $sort: {
+          count: -1,
+        },
+       }])
+       return res.status(200).json({
+        success : true,
+        message :  "Application status analytics fetched successfully",
+        data : applicationStatus,
+       })
+
+  }
+  catch(error){
+    next(error)
+  }
+}
+
+// Students by Branch Analytics
+const getStudentsByBranch = async (req, res, next) => {
+  try {
+    const studentsByBranch = await Student.aggregate([
+      {
+        $group: {
+          _id: "$branch",
+          count: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $sort: {
+          count: -1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Students by branch fetched successfully",
+      data: studentsByBranch,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+// Company Status Analytics
+const getCompanyStatusAnalytics = async (req, res, next) => {
+  try {
+    const companyStatus = await Company.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $sort: {
+          count: -1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Company status analytics fetched successfully",
+      data: companyStatus,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboardSummary,
   getRecentCompanies,
   getUpcomingDeadlines,
   getRecentApplications,
+  getApplicationStatusAnalytics,
+  getStudentsByBranch ,
+   getCompanyStatusAnalytics,
 };
  
