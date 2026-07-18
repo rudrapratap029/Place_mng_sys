@@ -38,16 +38,38 @@ const getDashboardSummary = async (req, res, next) => {
 // Recent Companies
 const getRecentCompanies = async (req, res, next) => {
   try {
+
+    // Current Page
+    const page = Number(req.query.page) || 1;
+
+    // Records per Page
+    const limit = Number(req.query.limit) || 5;
+
+    // Skip Formula
+    const skip = (page - 1) * limit;
+
+    // Total Companies
+    const totalCompanies = await Company.countDocuments();
+
+    // Fetch Companies
     const recentCompanies = await Company.find()
-     .select("companyName jobRole package location status lastDateToApply")
+      .select("companyName jobRole package location status lastDateToApply")
       .sort({ createdAt: -1 })
-      .limit(5);
+      .skip(skip)
+      .limit(limit);
+
+    // Total Pages
+    const totalPages = Math.ceil(totalCompanies / limit);
 
     return res.status(200).json({
       success: true,
       message: "Recent companies fetched successfully",
+      currentPage: page,
+      totalPages,
+      totalCompanies,
       data: recentCompanies,
     });
+
   } catch (error) {
     next(error);
   }
@@ -185,6 +207,44 @@ const getCompanyStatusAnalytics = async (req, res, next) => {
   }
 };
 
+const searchDashboard = async(req,res,next)=>{
+try{
+  const{branch , status } = req.query;
+  const studentFilter = {}
+  const applicationFilter = {}
+
+  if(branch){
+    studentFilter.branch = branch;
+  }
+  if(status){
+    applicationFilter.status= status;
+  }
+
+    const students = await Student.find(studentFilter);
+
+    const applications = await Application.find(applicationFilter)
+      .populate("student", "name")
+      .populate("company", "companyName");
+
+    return res.status(200).json({
+      success: true,
+      message: "Dashboard search fetched successfully",
+      data: {
+        students,
+        applications,
+      }
+
+
+      })
+
+
+}
+catch(error){
+  next(error);
+}
+
+}
+
 module.exports = {
   getDashboardSummary,
   getRecentCompanies,
@@ -193,5 +253,6 @@ module.exports = {
   getApplicationStatusAnalytics,
   getStudentsByBranch ,
    getCompanyStatusAnalytics,
+   searchDashboard,
 };
  
