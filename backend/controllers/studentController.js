@@ -19,7 +19,37 @@ const createStudent = async (req, res, next) => {
 // Get All Students
 const getStudents = async (req, res , next) => {
     try {
-        const students = await Student.find();
+        // const students = await Student.find();
+        const { search } = req.query;
+
+let filter = {};
+
+if (search) {
+  filter = {
+    $or: [
+      {
+        name: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        email: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        branch: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+    ],
+  };
+}
+
+const students = await Student.find(filter);
 
         return res.status(200).json({
             success: true,
