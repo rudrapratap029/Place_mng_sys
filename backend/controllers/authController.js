@@ -62,6 +62,8 @@ const registerAdmin = async (req, res, next) => {
 // Login Admin
 const loginAdmin = async(req,res,next)=>{
 
+    console.log("Request Body:", req.body);
+
   try{
 
     const {email,password}=req.body;
