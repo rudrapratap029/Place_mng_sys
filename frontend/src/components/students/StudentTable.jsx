@@ -1,33 +1,10 @@
-import api from "../../services/api";
-
 function StudentTable({
   students,
   loading,
   setShowModal,
   setSelectedStudent,
-  fetchStudents,
+  deleteStudent,
 }) {
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this student?"
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      const response = await api.delete(`/api/students/${id}`);
-
-      alert(response.data.message);
-
-      fetchStudents();
-    } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Failed to delete student"
-      );
-    }
-  };
-
   if (loading) {
     return (
       <div className="text-center text-lg font-semibold py-10">
@@ -90,9 +67,7 @@ function StudentTable({
                   </button>
 
                   <button
-                    onClick={() =>
-                      handleDelete(student._id)
-                    }
+                    onClick={() => deleteStudent(student._id)}
                     className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                   >
                     Delete

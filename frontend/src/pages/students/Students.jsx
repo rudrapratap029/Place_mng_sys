@@ -18,6 +18,7 @@ function Students() {
     fetchStudents();
   }, []);
 
+  // Fetch Students
   const fetchStudents = async () => {
     try {
       const response = await api.get("/api/students");
@@ -30,6 +31,28 @@ function Students() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Delete Student
+  const deleteStudent = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this student?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      const response = await api.delete(`/api/students/${id}`);
+
+      alert(response.data.message);
+
+      fetchStudents();
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+          "Failed to delete student"
+      );
     }
   };
 
@@ -65,16 +88,16 @@ function Students() {
 
       {/* Student Table */}
       <StudentTable
-  students={students.filter((student) =>
-    student.name.toLowerCase().includes(search.toLowerCase()) ||
-    student.email.toLowerCase().includes(search.toLowerCase()) ||
-    student.branch.toLowerCase().includes(search.toLowerCase())
-  )}
-  loading={loading}
-  setShowModal={setShowModal}
-  setSelectedStudent={setSelectedStudent}
-  fetchStudents={fetchStudents}
-/>
+        students={students.filter((student) =>
+          student.name.toLowerCase().includes(search.toLowerCase()) ||
+          student.email.toLowerCase().includes(search.toLowerCase()) ||
+          student.branch.toLowerCase().includes(search.toLowerCase())
+        )}
+        loading={loading}
+        setShowModal={setShowModal}
+        setSelectedStudent={setSelectedStudent}
+        deleteStudent={deleteStudent}
+      />
 
       {/* Modal */}
       {showModal && (
