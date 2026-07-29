@@ -11,18 +11,26 @@ function Students() {
   // Search
   const [search, setSearch] = useState("");
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   // Edit
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   useEffect(() => {
     fetchStudents();
-  }, []);
+  }, [page, search]);
 
   // Fetch Students
   const fetchStudents = async () => {
     try {
-      const response = await api.get("/api/students");
+      const response = await api.get(
+        `/api/students?search=${search}&page=${page}&limit=5`
+      );
+
       setStudents(response.data.data);
+      setTotalPages(response.data.totalPages);
     } catch (error) {
       console.log(error);
       alert(
@@ -81,23 +89,45 @@ function Students() {
           type="text"
           placeholder="Search Student..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
           className="w-full md:w-96 border border-gray-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-400"
         />
       </div>
 
       {/* Student Table */}
       <StudentTable
-        students={students.filter((student) =>
-          student.name.toLowerCase().includes(search.toLowerCase()) ||
-          student.email.toLowerCase().includes(search.toLowerCase()) ||
-          student.branch.toLowerCase().includes(search.toLowerCase())
-        )}
+        students={students}
         loading={loading}
         setShowModal={setShowModal}
         setSelectedStudent={setSelectedStudent}
         deleteStudent={deleteStudent}
       />
+
+      {/* Pagination */}
+      <div className="flex justify-center items-center gap-4 mt-6">
+        <button
+          onClick={() => setPage(page - 1)}
+          disabled={page === 1}
+          className="bg-blue-600 text-white px-4 py-2 rounded disabled:bg-gray-400"
+        >
+          Previous
+        </button>
+
+        <span className="font-semibold">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          onClick={() => setPage(page + 1)}
+          disabled={page === totalPages}
+          className="bg-blue-600 text-white px-4 py-2 rounded disabled:bg-gray-400"
+        >
+          Next
+        </button>
+      </div>
 
       {/* Modal */}
       {showModal && (
@@ -105,9 +135,7 @@ function Students() {
           <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-lg">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">
-                {selectedStudent
-                  ? "Edit Student"
-                  : "Add Student"}
+                {selectedStudent ? "Edit Student" : "Add Student"}
               </h2>
 
               <button

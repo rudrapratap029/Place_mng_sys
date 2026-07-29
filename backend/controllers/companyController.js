@@ -1,130 +1,147 @@
 const Company = require("../models/company");
-  
-//     create company 
-const createCompany = async (req, res , next ) => {
-    try {
-        const company = await Company.create(req.body);
 
-        return res.status(201).json({
-            success: true,
-            message: "Company created successfully",
-            data: company
-        });
+// Create Company
+const createCompany = async (req, res, next) => {
+  try {
+    const company = await Company.create(req.body);
 
-    } catch (error) {
-
-        next(error);
-
-    }
+    return res.status(201).json({
+      success: true,
+      message: "Company created successfully",
+      data: company,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
-      // get company 
-const getCompanies = async (req, res , next) => {
-    try {
-        const companies = await Company.find();
+// Get All Companies
+const getCompanies = async (req, res, next) => {
+  try {
+    const search = req.query.search || "";
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
 
-        return res.status(200).json({
-            success: true,
-            message: "Companies fetched successfully",
-            data: companies
-        });
+    let filter = {};
 
-    } catch (error) {
-
-       next(error);
+    if (search) {
+      filter = {
+        $or: [
+          {
+            companyName: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            jobRole: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            location: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ],
+      };
     }
-};
-//    update comapny 
 
-const updateCompany = async (req, res , next ) => {
-    try {
+    const totalCompanies = await Company.countDocuments(filter);
 
-        const company = await Company.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            {
-                new: true,
-                runValidators: true
-            }
-        );
-
-        if(!company){
-
-    const error = new Error("Company not found");
-    error.statusCode = 404;
-
-    throw error;
-}
-
-        return res.status(200).json({
-            success: true,
-            message: "Company updated successfully",
-            data: company
-        });
-        
-
-    } catch (error) {
-
-       next(error);
-    }
-};        
-
-//   get comapny by id 
-const getCompanyById = async (req, res ,next) => {
-    try {
-
-        const company = await Company.findById(req.params.id);
-         if(!company){
-
-    const error = new Error("Company not found");
-    error.statusCode = 404;
-
-    throw error;
-}
-
-
-        return res.status(200).json({
-            success: true,
-            message: "Company fetched successfully",
-            data: company
-        });
-       
-    } catch (error) {
-        next(error); 
-    }
-};
-
-//      delete 
-
-const deleteCompany = async(req,res, next)=>{
-  try{
-    const company = await Company.findByIdAndDelete(req.params.id);
-   if(!company){
-
-    const error = new Error("Company not found");
-    error.statusCode = 404;
-
-    throw error;
-}
+    const companies = await Company.find(filter)
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     return res.status(200).json({
-      success : true,
-      message : "Company deleted successfully",
-      data : company 
-    })
-
+      success: true,
+      message: "Companies fetched successfully",
+      totalCompanies,
+      currentPage: page,
+      totalPages: Math.ceil(totalCompanies / limit),
+      data: companies,
+    });
+  } catch (error) {
+    next(error);
   }
-  catch(error){
-   next(error);
+};
+
+// Get Company By ID
+const getCompanyById = async (req, res, next) => {
+  try {
+    const company = await Company.findById(req.params.id);
+
+    if (!company) {
+      const error = new Error("Company not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Company fetched successfully",
+      data: company,
+    });
+  } catch (error) {
+    next(error);
   }
+};
 
-}
+// Update Company
+const updateCompany = async (req, res, next) => {
+  try {
+    const company = await Company.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
+    if (!company) {
+      const error = new Error("Company not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Company updated successfully",
+      data: company,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete Company
+const deleteCompany = async (req, res, next) => {
+  try {
+    const company = await Company.findByIdAndDelete(req.params.id);
+
+    if (!company) {
+      const error = new Error("Company not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Company deleted successfully",
+      data: company,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
-    createCompany,
-    getCompanies,
-    getCompanyById,
-    updateCompany,
-    deleteCompany
+  createCompany,
+  getCompanies,
+  getCompanyById,
+  updateCompany,
+  deleteCompany,
 };

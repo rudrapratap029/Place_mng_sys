@@ -15,53 +15,69 @@ const createStudent = async (req, res, next) => {
          next(error);
     }
 };
-
 // Get All Students
-const getStudents = async (req, res , next) => {
-    try {
-        // const students = await Student.find();
-        const { search } = req.query;
+const getStudents = async (req, res, next) => {
+  try {
+    // Query Parameters
+    const { search, page = 1, limit = 5 } = req.query;
 
-let filter = {};
+    // Search Filter
+    let filter = {};
 
-if (search) {
-  filter = {
-    $or: [
-      {
-        name: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        email: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        branch: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-    ],
-  };
-}
-
-const students = await Student.find(filter);
-
-        return res.status(200).json({
-            success: true,
-            message: "Students fetched successfully",
-            data: students
-        });
-
-    } catch (error) {
-          next(error);
+    if (search) {
+      filter = {
+        $or: [
+          {
+            name: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            email: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            branch: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ],
+      };
     }
-};
 
+    // Pagination
+    const currentPage = Number(page);
+    const pageLimit = Number(limit);
+
+    const skip = (currentPage - 1) * pageLimit;
+
+    // Fetch Students
+    const students = await Student.find(filter)
+      .skip(skip)
+      .limit(pageLimit);
+
+    // Total Students
+    const totalStudents = await Student.countDocuments(filter);
+
+    // Total Pages
+    const totalPages = Math.ceil(totalStudents / pageLimit);
+
+    return res.status(200).json({
+      success: true,
+      message: "Students fetched successfully",
+      totalStudents,
+      currentPage,
+      totalPages,
+      data: students,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 // Get Student By ID
 const getStudentById = async (req, res , next) => {
     try {
