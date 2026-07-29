@@ -32,7 +32,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/students", studentRoutes);
-app.use("/api/application", applicationRoutes);
+app.use("/api/applications", applicationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 // Home Route

@@ -1,7 +1,7 @@
 const Application = require("../models/application");
 const Student = require("../models/student");
 const Company = require("../models/company");
-
+const mongoose = require("mongoose");
 
 // Create Application
 const createApplication = async (req, res, next) => {
@@ -88,26 +88,77 @@ const createApplication = async (req, res, next) => {
 
 // Get All Applications
 const getApplications = async (req, res, next) => {
-
   try {
+    const search = req.query.search || "";
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
 
-    const applications = await Application.find()
-      .populate("student")
-      .populate("company");
+    let matchStage = {};
 
+    if (search) {
+      matchStage = {
+        $or: [
+          {
+            "student.name": {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            "company.companyName": {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ],
+      };
+    }
+
+    const applications = await Application.aggregate([
+      {
+        $lookup: {
+          from: "students",
+          localField: "student",
+          foreignField: "_id",
+          as: "student",
+        },
+      },
+      {
+        $unwind: "$student",
+      },
+      {
+        $lookup: {
+          from: "companies",
+          localField: "company",
+          foreignField: "_id",
+          as: "company",
+        },
+      },
+      {
+        $unwind: "$company",
+      },
+      {
+        $match: matchStage,
+      },
+    ]);
+
+    const totalApplications = applications.length;
+
+    const paginatedApplications = applications.slice(
+      (page - 1) * limit,
+      page * limit
+    );
 
     return res.status(200).json({
       success: true,
       message: "Applications fetched successfully",
-      count: applications.length,
-      data: applications,
+      totalApplications,
+      currentPage: page,
+      totalPages: Math.ceil(totalApplications / limit),
+      data: paginatedApplications,
     });
-
-
-  } catch(error){
-
+  } catch (error) {
     next(error);
-
   }
 };
 
