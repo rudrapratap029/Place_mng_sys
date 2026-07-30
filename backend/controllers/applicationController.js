@@ -1,7 +1,7 @@
 const Application = require("../models/application");
 const Student = require("../models/student");
 const Company = require("../models/company");
-const mongoose = require("mongoose");
+
 
 // Create Application
 const createApplication = async (req, res, next) => {
@@ -110,6 +110,12 @@ const getApplications = async (req, res, next) => {
               $options: "i",
             },
           },
+          {
+            status: {
+              $regex: search,
+              $options: "i",
+            },
+          },
         ],
       };
     }
@@ -140,6 +146,11 @@ const getApplications = async (req, res, next) => {
       {
         $match: matchStage,
       },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
     ]);
 
     const totalApplications = applications.length;
@@ -154,7 +165,10 @@ const getApplications = async (req, res, next) => {
       message: "Applications fetched successfully",
       totalApplications,
       currentPage: page,
-      totalPages: Math.ceil(totalApplications / limit),
+      totalPages:
+        totalApplications === 0
+          ? 1
+          : Math.ceil(totalApplications / limit),
       data: paginatedApplications,
     });
   } catch (error) {
