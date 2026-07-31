@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
-
+import toast from "react-hot-toast";
 function StudentForm({
   fetchStudents,
   setShowModal,
@@ -60,8 +60,7 @@ function StudentForm({
           formData
         );
       }
-
-      alert(response.data.message);
+      toast.success(response.data.message);
 
       fetchStudents();
 
@@ -73,7 +72,9 @@ function StudentForm({
   console.log("Response:", error.response);
   console.log("Data:", error.response?.data);
 
-  alert(error.response?.data?.message || "Operation Failed");
+ toast.error(
+  error.response?.data?.message || "Operation Failed"
+);
 
     } finally {
       setLoading(false);

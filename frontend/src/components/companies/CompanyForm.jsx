@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
-
+import toast from "react-hot-toast";
 function CompanyForm({
   fetchCompanies,
   setShowModal,
@@ -53,11 +53,11 @@ function CompanyForm({
           formData
         );
 
-        alert("Company Updated Successfully");
+       toast.success("Company Updated Successfully");
       } else {
         await api.post("/api/companies", formData);
 
-        alert("Company Added Successfully");
+        toast.success("Company Added Successfully");
       }
 
       fetchCompanies();
@@ -80,10 +80,10 @@ function CompanyForm({
   console.log(error.response);
   console.log(error.response?.data);
 
-  alert(
-    error.response?.data?.message ||
-    "Something went wrong"
-  );
+  toast.error(
+  error.response?.data?.message ||
+  "Something went wrong"
+);
 }
   };
 

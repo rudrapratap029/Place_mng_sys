@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import toast from "react-hot-toast";
 import StudentTable from "../../components/students/StudentTable";
 import StudentForm from "../../components/students/StudentForm";
 
@@ -25,15 +26,18 @@ function Students() {
   // Fetch Students
   const fetchStudents = async () => {
     try {
+      setLoading(true);
+
       const response = await api.get(
         `/api/students?search=${search}&page=${page}&limit=5`
       );
 
       setStudents(response.data.data);
-      setTotalPages(response.data.totalPages);
+      setTotalPages(response.data.totalPages || 1);
     } catch (error) {
       console.log(error);
-      alert(
+
+      toast.error(
         error.response?.data?.message ||
           "Failed to fetch students"
       );
@@ -53,11 +57,11 @@ function Students() {
     try {
       const response = await api.delete(`/api/students/${id}`);
 
-      alert(response.data.message);
+      toast.success(response.data.message);
 
       fetchStudents();
     } catch (error) {
-      alert(
+      toast.error(
         error.response?.data?.message ||
           "Failed to delete student"
       );
@@ -135,7 +139,9 @@ function Students() {
           <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-lg">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">
-                {selectedStudent ? "Edit Student" : "Add Student"}
+                {selectedStudent
+                  ? "Edit Student"
+                  : "Add Student"}
               </h2>
 
               <button

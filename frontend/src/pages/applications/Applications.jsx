@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import toast from "react-hot-toast";
 import ApplicationTable from "../../components/applications/ApplicationTable";
 import ApplicationForm from "../../components/applications/ApplicationForm";
 
@@ -26,6 +27,8 @@ function Applications() {
   // Fetch Applications
   const fetchApplications = async () => {
     try {
+      setLoading(true);
+
       const response = await api.get(
         `/api/applications?search=${search}&page=${page}&limit=5`
       );
@@ -35,7 +38,7 @@ function Applications() {
     } catch (error) {
       console.log(error);
 
-      alert(
+      toast.error(
         error.response?.data?.message ||
           "Failed to fetch applications"
       );
@@ -57,11 +60,11 @@ function Applications() {
         `/api/applications/${id}`
       );
 
-      alert(response.data.message);
+      toast.success(response.data.message);
 
       fetchApplications();
     } catch (error) {
-      alert(
+      toast.error(
         error.response?.data?.message ||
           "Failed to delete application"
       );
