@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import toast from "react-hot-toast";
+
 import StudentTable from "../../components/students/StudentTable";
 import StudentForm from "../../components/students/StudentForm";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
 function Students() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Add/Edit Modal
   const [showModal, setShowModal] = useState(false);
+
+  // Delete Modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteStudentId, setDeleteStudentId] = useState(null);
 
   // Search
   const [search, setSearch] = useState("");
@@ -47,19 +55,18 @@ function Students() {
   };
 
   // Delete Student
-  const deleteStudent = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this student?"
-    );
-
-    if (!confirmDelete) return;
-
+  const deleteStudent = async () => {
     try {
-      const response = await api.delete(`/api/students/${id}`);
+      const response = await api.delete(
+        `/api/students/${deleteStudentId}`
+      );
 
       toast.success(response.data.message);
 
       fetchStudents();
+
+      setShowDeleteModal(false);
+      setDeleteStudentId(null);
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
@@ -107,7 +114,10 @@ function Students() {
         loading={loading}
         setShowModal={setShowModal}
         setSelectedStudent={setSelectedStudent}
-        deleteStudent={deleteStudent}
+        deleteStudent={(id) => {
+          setDeleteStudentId(id);
+          setShowDeleteModal(true);
+        }}
       />
 
       {/* Pagination */}
@@ -133,7 +143,7 @@ function Students() {
         </button>
       </div>
 
-      {/* Modal */}
+      {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
           <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-lg">
@@ -163,6 +173,19 @@ function Students() {
             />
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <ConfirmModal
+          title="Delete Student"
+          message="Are you sure you want to delete this student?"
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setDeleteStudentId(null);
+          }}
+          onConfirm={deleteStudent}
+        />
       )}
     </div>
   );

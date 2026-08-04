@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import toast from "react-hot-toast";
 
 function ApplicationForm({
   fetchApplications,
@@ -27,6 +28,12 @@ function ApplicationForm({
         student: selectedApplication.student?._id || "",
         company: selectedApplication.company?._id || "",
         status: selectedApplication.status || "Applied",
+      });
+    } else {
+      setFormData({
+        student: "",
+        company: "",
+        status: "Applied",
       });
     }
   }, [selectedApplication]);
@@ -68,39 +75,28 @@ function ApplicationForm({
           }
         );
 
-        alert(response.data.message);
+        toast.success(response.data.message);
       } else {
-        const response = await api.post(
-          "/api/applications",
-          {
-            student: formData.student,
-            company: formData.company,
-          }
-        );
+        const response = await api.post("/api/applications", {
+          student: formData.student,
+          company: formData.company,
+        });
 
-        alert(response.data.message);
+        toast.success(response.data.message);
       }
 
       fetchApplications();
-
       setSelectedApplication(null);
-
       setShowModal(false);
-
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Something went wrong"
+      toast.error(
+        error.response?.data?.message || "Something went wrong"
       );
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-5"
-    >
-      {/* Student */}
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <label className="block font-semibold mb-2">
           Student
@@ -114,22 +110,16 @@ function ApplicationForm({
           required
           className="w-full border rounded-lg px-4 py-3"
         >
-          <option value="">
-            Select Student
-          </option>
+          <option value="">Select Student</option>
 
           {students.map((student) => (
-            <option
-              key={student._id}
-              value={student._id}
-            >
+            <option key={student._id} value={student._id}>
               {student.name}
             </option>
           ))}
         </select>
       </div>
 
-      {/* Company */}
       <div>
         <label className="block font-semibold mb-2">
           Company
@@ -143,22 +133,16 @@ function ApplicationForm({
           required
           className="w-full border rounded-lg px-4 py-3"
         >
-          <option value="">
-            Select Company
-          </option>
+          <option value="">Select Company</option>
 
           {companies.map((company) => (
-            <option
-              key={company._id}
-              value={company._id}
-            >
+            <option key={company._id} value={company._id}>
               {company.companyName}
             </option>
           ))}
         </select>
       </div>
 
-      {/* Status */}
       <div>
         <label className="block font-semibold mb-2">
           Status
@@ -170,21 +154,12 @@ function ApplicationForm({
           onChange={handleChange}
           className="w-full border rounded-lg px-4 py-3"
         >
-          <option value="Applied">
-            Applied
-          </option>
-
-          <option value="Selected">
-            Selected
-          </option>
-
-          <option value="Rejected">
-            Rejected
-          </option>
+          <option value="Applied">Applied</option>
+          <option value="Selected">Selected</option>
+          <option value="Rejected">Rejected</option>
         </select>
       </div>
 
-      {/* Buttons */}
       <div className="flex justify-end gap-4">
         <button
           type="button"
@@ -201,9 +176,7 @@ function ApplicationForm({
           type="submit"
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg"
         >
-          {selectedApplication
-            ? "Update"
-            : "Create"}
+          {selectedApplication ? "Update" : "Create"}
         </button>
       </div>
     </form>

@@ -1,3 +1,4 @@
+import Loading from "../common/Loader";
 function ApplicationTable({
   applications,
   loading,
@@ -5,13 +6,9 @@ function ApplicationTable({
   setSelectedApplication,
   deleteApplication,
 }) {
-  if (loading) {
-    return (
-      <div className="text-center text-lg font-semibold py-10">
-        Loading Applications...
-      </div>
-    );
-  }
+ if (loading) {
+  return <Loading />;
+}
 
   return (
     <div className="bg-white rounded-xl shadow overflow-x-auto">

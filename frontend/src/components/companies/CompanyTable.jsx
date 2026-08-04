@@ -1,3 +1,5 @@
+import Loading from "../common/Loader";
+
 function CompanyTable({
   companies,
   loading,
@@ -6,11 +8,7 @@ function CompanyTable({
   deleteCompany,
 }) {
   if (loading) {
-    return (
-      <div className="text-center text-lg font-semibold py-10">
-        Loading Companies...
-      </div>
-    );
+    return <Loading />;
   }
 
   return (
@@ -63,7 +61,7 @@ function CompanyTable({
 
                 <td className="px-4 py-3 border-b">
                   <span
-                    className={`px-3 py-1 rounded-full text-sm text-white ${
+                    className={`px-3 py-1 rounded-full text-white text-sm ${
                       company.status === "Open"
                         ? "bg-green-600"
                         : "bg-red-600"

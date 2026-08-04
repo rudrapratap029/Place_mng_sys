@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import toast from "react-hot-toast";
+
 import CompanyTable from "../../components/companies/CompanyTable";
 import CompanyForm from "../../components/companies/CompanyForm";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
 function Companies() {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Add / Edit Modal
   const [showModal, setShowModal] = useState(false);
+
+  // Delete Modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteCompanyId, setDeleteCompanyId] = useState(null);
 
   // Search
   const [search, setSearch] = useState("");
@@ -47,21 +55,18 @@ function Companies() {
   };
 
   // Delete Company
-  const deleteCompany = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this company?"
-    );
-
-    if (!confirmDelete) return;
-
+  const deleteCompany = async () => {
     try {
       const response = await api.delete(
-        `/api/companies/${id}`
+        `/api/companies/${deleteCompanyId}`
       );
 
       toast.success(response.data.message);
 
       fetchCompanies();
+
+      setShowDeleteModal(false);
+      setDeleteCompanyId(null);
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
@@ -109,7 +114,10 @@ function Companies() {
         loading={loading}
         setShowModal={setShowModal}
         setSelectedCompany={setSelectedCompany}
-        deleteCompany={deleteCompany}
+        deleteCompany={(id) => {
+          setDeleteCompanyId(id);
+          setShowDeleteModal(true);
+        }}
       />
 
       {/* Pagination */}
@@ -135,7 +143,7 @@ function Companies() {
         </button>
       </div>
 
-      {/* Modal */}
+      {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
           <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-2xl">
@@ -165,6 +173,19 @@ function Companies() {
             />
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <ConfirmModal
+          title="Delete Company"
+          message="Are you sure you want to delete this company?"
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setDeleteCompanyId(null);
+          }}
+          onConfirm={deleteCompany}
+        />
       )}
     </div>
   );

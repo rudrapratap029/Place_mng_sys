@@ -1,3 +1,5 @@
+import Loading from "../common/Loader";
+
 function StudentTable({
   students,
   loading,
@@ -6,11 +8,7 @@ function StudentTable({
   deleteStudent,
 }) {
   if (loading) {
-    return (
-      <div className="text-center text-lg font-semibold py-10">
-        Loading Students...
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

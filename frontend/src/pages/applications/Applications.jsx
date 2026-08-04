@@ -1,13 +1,22 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import toast from "react-hot-toast";
+
 import ApplicationTable from "../../components/applications/ApplicationTable";
 import ApplicationForm from "../../components/applications/ApplicationForm";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
 function Applications() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Add/Edit Modal
   const [showModal, setShowModal] = useState(false);
+
+  // Delete Modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteApplicationId, setDeleteApplicationId] =
+    useState(null);
 
   // Search
   const [search, setSearch] = useState("");
@@ -48,21 +57,18 @@ function Applications() {
   };
 
   // Delete Application
-  const deleteApplication = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this application?"
-    );
-
-    if (!confirmDelete) return;
-
+  const deleteApplication = async () => {
     try {
       const response = await api.delete(
-        `/api/applications/${id}`
+        `/api/applications/${deleteApplicationId}`
       );
 
       toast.success(response.data.message);
 
       fetchApplications();
+
+      setShowDeleteModal(false);
+      setDeleteApplicationId(null);
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
@@ -110,7 +116,10 @@ function Applications() {
         loading={loading}
         setShowModal={setShowModal}
         setSelectedApplication={setSelectedApplication}
-        deleteApplication={deleteApplication}
+        deleteApplication={(id) => {
+          setDeleteApplicationId(id);
+          setShowDeleteModal(true);
+        }}
       />
 
       {/* Pagination */}
@@ -136,7 +145,7 @@ function Applications() {
         </button>
       </div>
 
-      {/* Modal */}
+      {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
           <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-lg">
@@ -166,6 +175,19 @@ function Applications() {
             />
           </div>
         </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <ConfirmModal
+          title="Delete Application"
+          message="Are you sure you want to delete this application?"
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setDeleteApplicationId(null);
+          }}
+          onConfirm={deleteApplication}
+        />
       )}
     </div>
   );
