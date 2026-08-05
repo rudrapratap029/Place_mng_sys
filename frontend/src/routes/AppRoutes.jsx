@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 
+import Landing from "../pages/Landing";
 import Login from "../pages/auth/Login";
 import Dashboard from "../pages/dashboard/Dashboard";
 import Students from "../pages/students/Students";
@@ -14,10 +15,10 @@ function AppRoutes() {
     <Routes>
 
       {/* Public Routes */}
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
 
-      {/* Protected Layout */}
+      {/* Protected Routes */}
       <Route element={<MainLayout />}>
 
         <Route
@@ -42,7 +43,7 @@ function AppRoutes() {
 
       </Route>
 
-      {/* 404 Page */}
+      {/* 404 */}
       <Route
         path="*"
         element={<NotFound />}

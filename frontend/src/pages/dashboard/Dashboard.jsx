@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import toast from "react-hot-toast";
-import Card from "../../components/ui/Card";
+
+import StatsCards from "../../components/dashboard/StatsCards";
+import PlacementChart from "../../components/dashboard/PlacementChart";
+import PlacementPieChart from "../../components/dashboard/PlacementPieChart";
 
 function Dashboard() {
   const [dashboard, setDashboard] = useState({
@@ -19,49 +22,43 @@ function Dashboard() {
     try {
       const response = await api.get("/api/dashboard/summary");
 
-      // Store only dashboard data
       setDashboard(response.data.data);
     } catch (error) {
       console.log(error);
 
       toast.error(
         error.response?.data?.message ||
-          "Failed to load dashboard"
+        "Failed to load dashboard"
       );
     }
   };
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">
-        Dashboard
-      </h1>
+    <div className="space-y-8">
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card
-          title="Total Students"
-          value={dashboard.totalStudents}
-          color="text-blue-600"
-        />
+      {/* Heading */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-800">
+          Dashboard
+        </h1>
 
-        <Card
-          title="Total Companies"
-          value={dashboard.totalCompanies}
-          color="text-green-600"
-        />
-
-        <Card
-          title="Applications"
-          value={dashboard.totalApplications}
-          color="text-orange-600"
-        />
-
-        <Card
-          title="Selected Students"
-          value={dashboard.totalSelectedApplications}
-          color="text-purple-600"
-        />
+        <p className="text-gray-500 mt-2">
+          Welcome to Placement Management System
+        </p>
       </div>
+
+      {/* Stats Cards */}
+      <StatsCards dashboard={dashboard} />
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <PlacementChart />
+
+        <PlacementPieChart />
+
+      </div>
+
     </div>
   );
 }

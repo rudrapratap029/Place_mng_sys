@@ -252,7 +252,7 @@ module.exports = {
   getRecentApplications,
   getApplicationStatusAnalytics,
   getStudentsByBranch ,
-   getCompanyStatusAnalytics,
-   searchDashboard,
+  getCompanyStatusAnalytics,
+  searchDashboard,
 };
  

@@ -1,14 +1,41 @@
 const express = require("express");
 const router = express.Router();
 
-const {getDashboardSummary, getRecentCompanies ,getUpcomingDeadlines ,  getRecentApplications, getApplicationStatusAnalytics,  getStudentsByBranch , getCompanyStatusAnalytics,searchDashboard} = require("../controllers/dashboardController");
+const { protect } = require("../middleware/authMiddleware");
 
-router.get("/summary" , getDashboardSummary);
-router.get("/recent-companies", getRecentCompanies);
-router.get("/upcoming-deadlines", getUpcomingDeadlines);
-router.get("/recent-applications", getRecentApplications);
-router.get("/application-status",getApplicationStatusAnalytics);
-router.get("/students-by-branch", getStudentsByBranch);
-router.get("/company-status", getCompanyStatusAnalytics);
-router.get("/search", searchDashboard);
+const {
+  getDashboardSummary,
+  getRecentCompanies,
+  getUpcomingDeadlines,
+  getRecentApplications,
+  getApplicationStatusAnalytics,
+  getStudentsByBranch,
+  getCompanyStatusAnalytics,
+  searchDashboard,
+} = require("../controllers/dashboardController");
+
+// Dashboard Summary
+router.get("/summary", protect, getDashboardSummary);
+
+// Recent Companies
+router.get("/recent-companies", protect, getRecentCompanies);
+
+// Upcoming Deadlines
+router.get("/upcoming-deadlines", protect, getUpcomingDeadlines);
+
+// Recent Applications
+router.get("/recent-applications", protect, getRecentApplications);
+
+// Application Status Analytics
+router.get("/application-status", protect, getApplicationStatusAnalytics);
+
+// Students by Branch
+router.get("/students-by-branch", protect, getStudentsByBranch);
+
+// Company Status Analytics
+router.get("/company-status", protect, getCompanyStatusAnalytics);
+
+// Dashboard Search
+router.get("/search", protect, searchDashboard);
+
 module.exports = router;
